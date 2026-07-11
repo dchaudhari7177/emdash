@@ -1,5 +1,20 @@
 # emdash
 
+## 0.30.0
+
+### Minor Changes
+
+- [#1868](https://github.com/emdash-cms/emdash/pull/1868) [`4c57ee2`](https://github.com/emdash-cms/emdash/commit/4c57ee216f242ef163ae269ec6ff6abfba716e6f) Thanks [@afonsojramos](https://github.com/afonsojramos)! - Invited users can now accept their invite by signing in with Google or GitHub, instead of only creating a passkey.
+
+### Patch Changes
+
+- [#1505](https://github.com/emdash-cms/emdash/pull/1505) [`fbb04ab`](https://github.com/emdash-cms/emdash/commit/fbb04abcff5b909e28541d3b3e5fca3089870b83) Thanks [@swissky](https://github.com/swissky)! - The admin shell now falls back to the Site Icon configured in Settings → General for its favicon, so the EmDash backend is branded like the public site. An explicit build-time `admin.favicon` still takes precedence, and the default EmDash mark is used when neither is set.
+
+- Updated dependencies [[`1c15097`](https://github.com/emdash-cms/emdash/commit/1c150977628d729c7b501f24c60a9f65fbb02123), [`4c57ee2`](https://github.com/emdash-cms/emdash/commit/4c57ee216f242ef163ae269ec6ff6abfba716e6f)]:
+  - @emdash-cms/admin@0.30.0
+  - @emdash-cms/auth@0.30.0
+  - @emdash-cms/gutenberg-to-portable-text@0.30.0
+
 ## 0.29.0
 
 ### Minor Changes

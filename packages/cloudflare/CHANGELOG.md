@@ -1,5 +1,12 @@
 # @emdash-cms/cloudflare
 
+## 0.30.0
+
+### Patch Changes
+
+- Updated dependencies [[`fbb04ab`](https://github.com/emdash-cms/emdash/commit/fbb04abcff5b909e28541d3b3e5fca3089870b83), [`4c57ee2`](https://github.com/emdash-cms/emdash/commit/4c57ee216f242ef163ae269ec6ff6abfba716e6f)]:
+  - emdash@0.30.0
+
 ## 0.29.0
 
 ### Minor Changes

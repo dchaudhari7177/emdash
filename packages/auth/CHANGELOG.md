@@ -1,5 +1,11 @@
 # @emdash-cms/auth
 
+## 0.30.0
+
+### Minor Changes
+
+- [#1868](https://github.com/emdash-cms/emdash/pull/1868) [`4c57ee2`](https://github.com/emdash-cms/emdash/commit/4c57ee216f242ef163ae269ec6ff6abfba716e6f) Thanks [@afonsojramos](https://github.com/afonsojramos)! - Invited users can now accept their invite by signing in with Google or GitHub, instead of only creating a passkey.
+
 ## 0.29.0
 
 ## 0.28.1
