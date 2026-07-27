@@ -2704,15 +2704,26 @@ export class EmDashRuntime {
 			taxonomies?: Record<string, string[]>;
 		},
 	) {
-		// Run beforeSave hooks (trusted plugins)
+		// Run beforeSave hooks (trusted plugins). A hook may throw to cancel the save
+		// ("throw to cancel" is the documented mechanism); surface that as a structured
+		// client error instead of letting it escape as an unhandled 500.
 		let processedData = body.data;
-		if (this.hooks.hasHooks("content:beforeSave")) {
-			const hookResult = await this.hooks.runContentBeforeSave(body.data, collection, true);
-			processedData = hookResult.content;
+		try {
+			if (this.hooks.hasHooks("content:beforeSave")) {
+				const hookResult = await this.hooks.runContentBeforeSave(body.data, collection, true);
+				processedData = hookResult.content;
+			}
+			// Run beforeSave hooks (sandboxed plugins)
+			processedData = await this.runSandboxedBeforeSave(processedData, collection, true);
+		} catch (error) {
+			return {
+				success: false as const,
+				error: {
+					code: "BEFORE_SAVE_REJECTED",
+					message: error instanceof Error ? error.message : "Save cancelled by a beforeSave hook",
+				},
+			};
 		}
-
-		// Run beforeSave hooks (sandboxed plugins)
-		processedData = await this.runSandboxedBeforeSave(processedData, collection, true);
 
 		// Normalize media fields (fill dimensions, storageKey, etc.)
 		processedData = await this.normalizeMediaFields(collection, processedData);
@@ -2800,20 +2811,32 @@ export class EmDashRuntime {
 		}
 		const { _rev: _discardedRev, ...bodyWithoutRev } = body;
 
-		// Run beforeSave hooks if data is provided
+		// Run beforeSave hooks if data is provided. A hook throwing to cancel the save is a
+		// documented outcome — surface it as a structured client error, not an unhandled 500.
 		let processedData = bodyWithoutRev.data;
 		if (bodyWithoutRev.data) {
-			if (this.hooks.hasHooks("content:beforeSave")) {
-				const hookResult = await this.hooks.runContentBeforeSave(
-					bodyWithoutRev.data,
-					collection,
-					false,
-				);
-				processedData = hookResult.content;
-			}
+			try {
+				if (this.hooks.hasHooks("content:beforeSave")) {
+					const hookResult = await this.hooks.runContentBeforeSave(
+						bodyWithoutRev.data,
+						collection,
+						false,
+					);
+					processedData = hookResult.content;
+				}
 
-			// Run sandboxed beforeSave hooks
-			processedData = await this.runSandboxedBeforeSave(processedData!, collection, false);
+				// Run sandboxed beforeSave hooks
+				processedData = await this.runSandboxedBeforeSave(processedData!, collection, false);
+			} catch (error) {
+				return {
+					success: false as const,
+					error: {
+						code: "BEFORE_SAVE_REJECTED",
+						message:
+							error instanceof Error ? error.message : "Save cancelled by a beforeSave hook",
+					},
+				};
+			}
 
 			// Normalize media fields (fill dimensions, storageKey, etc.)
 			processedData = await this.normalizeMediaFields(collection, processedData);
