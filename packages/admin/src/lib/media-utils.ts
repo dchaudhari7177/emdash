@@ -110,7 +110,12 @@ const INTERNAL_MEDIA_PREFIX = "/_emdash/api/media/file/";
  * `[...key]` route matches them as path segments, so each segment is encoded on its own:
  * `?`, `#` and `%` stay inside the path, but `/` still separates segments. A key with an
  * empty, `.` or `..` segment is encoded whole instead, because the URL parser would
- * collapse those segments (even percent-encoded ones) and move the request off the route.
+ * collapse those segments (even percent-encoded ones) and move the request off the route;
+ * encoded whole, the slashes become `%2F` and no segment is a dot segment any more.
+ *
+ * That covers slash-delimited traversal only. A key that is exactly `.` or `..` has no
+ * representation as a path segment: the parser collapses `%2e` and `%2e%2e` the same way.
+ * Neither is a valid storage key.
  */
 export function localMediaFileUrl(key: string): string {
 	const segments = key.split("/");
