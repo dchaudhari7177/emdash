@@ -6,9 +6,12 @@ import { mkdtemp, rm, writeFile, mkdir, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { runCommand } from "citty";
+import { sql } from "kysely";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 import { exportSeed } from "../../../src/cli/commands/export-seed.js";
+import { seedCommand } from "../../../src/cli/commands/seed.js";
 import { createDatabase } from "../../../src/database/connection.js";
 import { runMigrations } from "../../../src/database/migrations/runner.js";
 import { ContentRepository } from "../../../src/database/repositories/content.js";
@@ -404,6 +407,55 @@ describe("CLI Seed Commands", () => {
 			} finally {
 				await db.destroy();
 			}
+		});
+	});
+
+	describe("emdash seed --no-content (#2928)", () => {
+		const seed: SeedFile = {
+			version: "1",
+			collections: [
+				{
+					slug: "posts",
+					label: "Posts",
+					fields: [{ slug: "title", label: "Title", type: "string" }],
+				},
+			],
+			content: {
+				posts: [
+					{
+						id: "post-1",
+						slug: "hello-world",
+						status: "published",
+						data: { title: "Hello World" },
+					},
+				],
+			},
+		};
+
+		async function seedAndCountPosts(flags: string[]): Promise<number> {
+			const seedPath = join(tempDir, "seed.json");
+			await writeFile(seedPath, JSON.stringify(seed));
+			await runCommand(seedCommand, {
+				rawArgs: [seedPath, "--cwd", tempDir, "--database", "data.db", ...flags],
+			});
+
+			const db = createDatabase({ url: `file:${join(tempDir, "data.db")}` });
+			try {
+				const rows = await sql<{ count: number }>`SELECT COUNT(*) AS count FROM ec_posts`.execute(
+					db,
+				);
+				return Number(rows.rows[0]?.count);
+			} finally {
+				await db.destroy();
+			}
+		}
+
+		it("applies content by default", async () => {
+			expect(await seedAndCountPosts([])).toBe(1);
+		});
+
+		it("creates the schema but no content when --no-content is passed", async () => {
+			expect(await seedAndCountPosts(["--no-content"])).toBe(0);
 		});
 	});
 });

@@ -364,10 +364,13 @@ export const publishCommand = defineCommand({
 			description: "Marketplace registry URL",
 			default: DEFAULT_REGISTRY,
 		},
-		"no-wait": {
+		// Declared positively for the same reason as `seed --no-content`: citty turns
+		// `--no-wait` into `wait: false` and never sets an arg named "no-wait".
+		wait: {
 			type: "boolean",
-			description: "Exit immediately after upload without waiting for audit (useful for CI)",
-			default: false,
+			description:
+				"Wait for the security audit; --no-wait exits right after upload (useful for CI)",
+			default: true,
 		},
 	},
 	async run({ args }) {
@@ -630,7 +633,7 @@ export const publishCommand = defineCommand({
 		if (uploadRes.status === 202) {
 			consola.info(`  Status: ${pc.yellow("pending")} (audit running in background)`);
 
-			if (args["no-wait"]) {
+			if (args.wait === false) {
 				consola.info("Skipping audit wait (--no-wait). Check status later.");
 				console.log();
 				return;

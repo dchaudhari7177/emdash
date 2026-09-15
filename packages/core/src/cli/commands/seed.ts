@@ -106,10 +106,13 @@ export const seedCommand = defineCommand({
 			description: "Validate only, don't apply",
 			default: false,
 		},
-		"no-content": {
+		// Declared positively: citty reads any `--no-<name>` token as the negation of `<name>`,
+		// so a boolean declared as "no-content" could never be set from the command line.
+		content: {
 			type: "boolean",
-			description: "Skip sample data (content entries, bylines, taxonomy terms)",
-			default: false,
+			description:
+				"Include sample data (content entries, bylines, taxonomy terms); --no-content skips it",
+			default: true,
 		},
 		"on-conflict": {
 			type: "string",
@@ -217,7 +220,7 @@ export const seedCommand = defineCommand({
 		}
 
 		const options: SeedApplyOptions = {
-			includeContent: !args["no-content"],
+			includeContent: args.content !== false,
 			onConflict: onConflictRaw,
 			storage,
 		};
