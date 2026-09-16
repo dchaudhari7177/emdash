@@ -4,8 +4,8 @@ import { afterEach, beforeEach, expect, it } from "vitest";
 
 import { runMigrations } from "../../../src/database/migrations/runner.js";
 import { MediaUsageRepository } from "../../../src/database/repositories/media-usage.js";
-import { CONTENT_SOURCE_SCHEMA_VERSION } from "../../../src/media/usage/types.js";
 import type { Database as DatabaseSchema } from "../../../src/database/types.js";
+import { CONTENT_SOURCE_SCHEMA_VERSION } from "../../../src/media/usage/types.js";
 
 interface CapturedQuery {
 	sql: string;
