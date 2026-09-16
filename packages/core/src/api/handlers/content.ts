@@ -514,6 +514,9 @@ function resolveBylineFilter(
 	return { mode: "any", bylineIds, includeInferred, locale };
 }
 
+/** The `status` filter value that means "every status", as the admin list uses it. */
+const CONTENT_STATUS_FILTER_ALL = "all";
+
 /**
  * Create content list handler
  */
@@ -541,7 +544,10 @@ export async function handleContentList(
 	try {
 		const repo = new ContentRepository(db);
 		const where: FindManyOptions["where"] = {};
-		if (params.status) where.status = params.status;
+		// `all` is the admin list's "no status filter" value. Passed through as a
+		// literal it matched no rows, so the list came back empty and looked like a
+		// collection with no entries (#2837).
+		if (params.status && params.status !== CONTENT_STATUS_FILTER_ALL) where.status = params.status;
 		const locale = params.locale ? resolveConfiguredLocale(params.locale) : undefined;
 		if (locale) where.locale = locale;
 		if (params.authorId) where.authorId = params.authorId;

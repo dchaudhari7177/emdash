@@ -138,7 +138,10 @@ const contentFieldFiltersQuery = z
 
 export const contentListQuery = cursorPaginationQuery
 	.extend({
-		status: z.string().optional(),
+		status: z.string().optional().meta({
+			description:
+				"Filter by status, e.g. draft, published or scheduled. Omit it, or pass `all`, to list every status.",
+		}),
 		orderBy: z.string().optional(),
 		order: z.enum(["asc", "desc"]).optional(),
 		locale: localeCode.optional(),

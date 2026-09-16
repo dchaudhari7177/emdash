@@ -4,6 +4,7 @@ import {
 	handleContentAuthors,
 	handleContentCreate,
 	handleContentList,
+	handleContentPublish,
 } from "../../../src/api/handlers/content.js";
 import { UserRepository } from "../../../src/database/repositories/user.js";
 import { createContentAccess } from "../../../src/plugins/context.js";
@@ -88,6 +89,28 @@ describeEachDialect("content list filters (#1288)", (dialect) => {
 		if (!result.success || !result.data) throw new Error("list failed");
 		return result.data.items.map((i) => i.slug ?? "");
 	}
+
+	it("treats status=all as no status filter instead of a status nothing has (#2837)", async () => {
+		const listed = await handleContentList(ctx.db, "posts", {});
+		if (!listed.success) throw new Error("list failed");
+		const newest = listed.data.items.find((item) => item.slug === "y2025");
+		if (!newest) throw new Error("seed missing");
+		const published = await handleContentPublish(ctx.db, "posts", newest.id);
+		if (!published.success) throw new Error("publish failed");
+
+		const all = await handleContentList(ctx.db, "posts", { status: "all" });
+		expect(slugsOf(all).toSorted()).toEqual(["y2023", "y2024", "y2025"]);
+		if (!all.success) throw new Error("list failed");
+		expect(all.data.total).toBe(3);
+
+		// a real status still filters
+		expect(slugsOf(await handleContentList(ctx.db, "posts", { status: "published" }))).toEqual([
+			"y2025",
+		]);
+		expect(
+			slugsOf(await handleContentList(ctx.db, "posts", { status: "draft" })).toSorted(),
+		).toEqual(["y2023", "y2024"]);
+	});
 
 	it("filters by author", async () => {
 		const result = await handleContentList(ctx.db, "posts", { authorId: aliceId });
